@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <style>
+  body { margin:0; background:#000; color:#fff; font-family:sans-serif; }
+  #container { padding:20px; }
+  .team { font-size:24px; font-weight:bold; margin-bottom:10px; }
+  .player { font-size:18px; }
+ </style>
+</head>
+<body>
+ <div id="container">
+  <div class="team" id="homeName">Home</div>
+  <div id="homeLineup"></div>
+  <hr/>
+  <div class="team" id="awayName">Away</div>
+  <div id="awayLineup"></div>
+ </div>
+
+<script>
+const apiKey = '388e45570235f0135ecba53d8a1a0837'; // ← Put your real key here
+const headers = {
+  'x-rapidapi-key': apiKey,
+  'x-rapidapi-host': 'v3.football.api-sports.io'
+};
+
+async function fetchFixtureId() {
+  const res = await fetch('https://v3.football.api-sports.io/fixtures?team=78&last=1', { headers });
+  const data = await res.json();
+  return data.response[0]?.fixture?.id;
+}
+
+async function fetchLineups(fixtureId) {
+  const res = await fetch(`https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixtureId}`, { headers });
+  const data = await res.json();
+  return data.response;
+}
+
+async function renderLineups() {
+  const fixtureId = await fetchFixtureId();
+  if (!fixtureId) return;
+
+  const [home, away] = await fetchLineups(fixtureId);
+
+  document.getElementById('homeName').textContent = home.team.name;
+  document.getElementById('homeLineup').innerHTML = home.startXI.map(p =>
+    `<div class="player">#${p.player.number} ${p.player.name}</div>`
+  ).join('');
+
+  document.getElementById('awayName').textContent = away.team.name;
+  document.getElementById('awayLineup').innerHTML = away.startXI.map(p =>
+    `<div class="player">#${p.player.number} ${p.player.name}</div>`
+  ).join('');
+}
+
+renderLineups();
+</script>
+</body>
+</html>
